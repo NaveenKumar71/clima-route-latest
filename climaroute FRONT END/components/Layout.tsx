@@ -16,6 +16,7 @@ import {
   Menu
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // Background image is provided globally by BackgroundContext
 import { useBackground } from '../contexts/BackgroundContext';
@@ -135,16 +136,17 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
 
   if (location.pathname === '/') return <>{children}</>;
 
+  const { t } = useLanguage();
   const navItems = [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/re-routing', label: 'Dynamic Re-Routing', icon: MapIcon },
-    { to: '/history', label: 'History', icon: History },
-    { to: '/adaptive-speed', label: 'Adaptive Speed', icon: Gauge },
-    { to: '/weather', label: 'Weather Prediction', icon: CloudRain },
-    { to: '/notifications', label: 'Notifications', icon: Bell },
-    { to: '/eta', label: 'ETA Calculation', icon: Calculator },
-    { to: '/rest-point', label: 'Rest Point Alert', icon: Coffee },
-    { to: '/sos', label: 'SOS Alert', icon: AlertTriangle },
+    { to: '/dashboard', label: t('sidebar_dashboard'), icon: LayoutDashboard },
+    { to: '/re-routing', label: t('sidebar_dynamic_rerouting'), icon: MapIcon },
+    { to: '/history', label: t('sidebar_history'), icon: History },
+    { to: '/adaptive-speed', label: t('sidebar_adaptive_speed'), icon: Gauge },
+    { to: '/weather', label: t('sidebar_weather_prediction'), icon: CloudRain },
+    { to: '/notifications', label: t('sidebar_notifications'), icon: Bell },
+    { to: '/eta', label: t('sidebar_eta_calculations'), icon: Calculator },
+    { to: '/rest-point', label: t('sidebar_risk_point_alert'), icon: Coffee },
+    { to: '/sos', label: t('sidebar_sos_alert'), icon: AlertTriangle },
   ];
 
   const { bgUrl } = useBackground();
@@ -180,10 +182,10 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
 
           <div className="my-4 border-t border-gray-100 mx-6"></div>
 
-          <SidebarItem to="/settings" label="Settings" icon={Settings} />
+          <SidebarItem to="/settings" label={t('sidebar_settings')} icon={Settings} />
           <SidebarItem
             to="/"
-            label="Log Out"
+            label={t('logout')}
             icon={LogOut}
             onClick={(e) => {
               e.preventDefault();

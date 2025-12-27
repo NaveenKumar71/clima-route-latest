@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Clock, CheckCircle, AlertCircle, Loader, Calendar, Download, Filter, TrendingUp } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { apiService, getCurrentUser } from '../services/apiservice';
+import { useLanguage } from '../contexts/LanguageContext';
 import { Card, Button, Select } from '../components/Layout';
 import { useSettings } from '../contexts/SettingsContext';
 
 export function History() {
   const { settings } = useSettings();
+  const { t, language } = useLanguage();
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filteredHistory, setFilteredHistory] = useState<any[]>([]);
@@ -73,8 +75,9 @@ export function History() {
 
   const getStatusColor = (status: string) => {
     const s = status?.toLowerCase() || '';
-    if (s.includes('completed')) return 'bg-green-100 text-green-700 border-green-200';
-    if (s.includes('progress')) return 'bg-blue-100 text-blue-700 border-blue-200';
+    if (s.includes('completed') || s.includes(t('completed').toLowerCase())) return 'bg-green-100 text-green-700 border-green-200';
+    if (s.includes('progress') || s.includes(t('in_progress').toLowerCase())) return 'bg-blue-100 text-blue-700 border-blue-200';
+    if (s.includes('cancelled') || s.includes(t('cancelled').toLowerCase())) return 'bg-red-100 text-red-700 border-red-200';
     return 'bg-gray-100 text-gray-700 border-gray-200';
   };
 
@@ -115,13 +118,12 @@ export function History() {
 
   return (
     <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col">
-      
       {/* HEADER (White Box with Black Text) */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
         <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-          <Calendar className="text-blue-600"/> History
+          <Calendar className="text-blue-600"/> {t('history')}
         </h1>
-        <p className="text-sm text-slate-500 mt-1">View your delivery trip records</p>
+        <p className="text-sm text-slate-500 mt-1">{t('view_delivery_records')}</p>
       </div>
 
       {/* Simple Table */}
@@ -129,26 +131,26 @@ export function History() {
         {loading ? (
           <div className="flex-1 p-12 flex flex-col items-center justify-center text-gray-400">
             <Loader size={32} className="animate-spin mb-4 text-blue-500" />
-            <p>Loading trip records...</p>
+            <p>{t('loading_trip_records')}</p>
           </div>
         ) : filteredHistory.length === 0 ? (
           <div className="flex-1 p-12 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-300 rounded-xl">
             <Calendar size={48} className="mb-4 opacity-30" />
-            <p className="font-bold text-lg">No trips recorded yet</p>
-            <p className="text-sm mt-2">Start a delivery to see it here</p>
+            <p className="font-bold text-lg">{t('no_trips')}</p>
+            <p className="text-sm mt-2">{t('start_delivery')}</p>
           </div>
         ) : (
           <div className="overflow-y-auto border border-gray-200 rounded-lg shadow-sm bg-white">
             <table className="w-full text-left border-collapse">
               <thead className="bg-slate-800 text-white sticky top-0">
                 <tr>
-                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">Start Time</th>
-                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">End Time</th>
-                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">Source</th>
-                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">Destination</th>
-                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">Weather Condition</th>
-                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">{t('date')}</th>
+                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">{t('start_time')}</th>
+                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">{t('end_time')}</th>
+                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">{t('source')}</th>
+                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">{t('destination')}</th>
+                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">{t('weather_conditions')}</th>
+                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider">{t('status')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -159,11 +161,11 @@ export function History() {
                     <td className="px-4 py-3 text-sm text-gray-700">{row.endTime || '-'}</td>
                     <td className="px-4 py-3 text-sm text-gray-800">{row.origin}</td>
                     <td className="px-4 py-3 text-sm text-gray-800">{row.destination}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{row.weatherCondition || row.weather || "Unknown"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{row.weatherCondition || row.weather || t('sunny_weather')}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(row.status)}`}>
-                        {row.status === 'Completed' ? <CheckCircle size={12} /> : <Clock size={12} />}
-                        {row.status}
+                        {row.status === 'Completed' || row.status === t('completed') ? <CheckCircle size={12} /> : <Clock size={12} />}
+                        {t(row.status?.toLowerCase().replace(/ /g, '_')) || row.status}
                       </span>
                     </td>
                   </tr>

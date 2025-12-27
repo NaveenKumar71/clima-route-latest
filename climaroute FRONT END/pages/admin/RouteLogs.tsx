@@ -8,13 +8,13 @@ export default function RouteLogs() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch delivery history and users, then combine
     const loadData = async () => {
       try {
         const [historyData, usersData] = await Promise.all([
-          apiService.getHistory(),
+          apiService.getHistory({ role: 'admin' }),
           apiService.getUsers()
         ]);
+        console.log('[RouteLogs] Fetched history:', historyData);
         setUsers(usersData || []);
         
         // Map history with username - prefer backend driverName

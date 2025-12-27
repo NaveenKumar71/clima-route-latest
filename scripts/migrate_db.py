@@ -81,8 +81,9 @@ def migrate_table(sqlite_conn, pg_conn, table_name):
     # Insert into PostgreSQL
     col_names = [col[0] for col in columns]
     placeholders = ', '.join(['%s'] * len(col_names))
-    insert_sql = f'INSERT INTO "{table_name}" ({", ".join([f\'"{c}\'' for c in col_names])}) VALUES ({placeholders})'
-    
+    quoted_columns = ', '.join([f'"{c}"' for c in col_names])
+    insert_sql = f'INSERT INTO "{table_name}" ({quoted_columns}) VALUES ({placeholders})'
+
     try:
         execute_batch(pg_cursor, insert_sql, rows, page_size=1000)
         pg_conn.commit()

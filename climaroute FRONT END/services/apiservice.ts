@@ -1,3 +1,4 @@
+// <reference types="vite/client" />
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // Helper: Get current logged-in user info from localStorage
@@ -18,7 +19,15 @@ export const getCurrentUser = (): { email: string; role: string } => {
   }
 };
 
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
 export const apiService = {
+  get: async (url: string) => {
+    const response = await fetch(`${BASE_URL}${url.startsWith('/') ? url : '/' + url}`);
+    if (!response.ok) throw new Error('Network response was not ok');
+    return response.json();
+  },
+
   // LOGIN
   login: async (email: string, password: string) => {
     try {
@@ -801,5 +810,17 @@ export const apiService = {
       console.error('getRestPoints Error:', err);
       return { restPoints: [] };
     }
-  }
+  },
+
+  // GET DELIVERY HISTORY - filtered by user
+  getHistory: async (params?: any) => {
+    let url = '/history';
+    if (params) {
+      const query = typeof params === 'string'
+        ? params
+        : new URLSearchParams(params).toString();
+      url += '?' + query;
+    }
+    return apiService.get(url); // or your actual fetch logic
+  },
 };

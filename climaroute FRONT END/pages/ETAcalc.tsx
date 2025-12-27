@@ -11,9 +11,11 @@ import {
 } from 'lucide-react';
 import { apiService } from '../services/apiservice';
 import { useSettings } from '../contexts/SettingsContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // --- ETA Calculation Page (Exact Time + Live Weather Sync) ---
 export function ETACalculator() {
+        const { t } = useLanguage();
     const { settings } = useSettings();
     const [origin, setOrigin] = useState("");
     const [dest, setDest] = useState("");
@@ -245,16 +247,16 @@ export function ETACalculator() {
 
   return (
     <div className="space-y-6">
-       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-         <h2 className="text-2xl font-bold text-slate-800">Estimate Delivery Time</h2>
-         <p className="text-sm text-slate-500 mt-1">Calculate delivery time based on weather and traffic</p>
-       </div>
+             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                 <h2 className="text-2xl font-bold text-slate-800">{t('estimate_delivery_time')}</h2>
+                 <p className="text-sm text-slate-500 mt-1">{t('calculate_delivery_time_desc')}</p>
+             </div>
        
        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card title="Route Details">
+          <Card title={t('route_details') || 'Route Details'}>
              <div className="space-y-4">
                 <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-400 uppercase">Origin</label>
+                    <label className="text-xs font-bold text-gray-400 uppercase">{t('origin')}</label>
                     <Input 
                         placeholder="Origin Address" 
                         value={origin}
@@ -262,7 +264,7 @@ export function ETACalculator() {
                     />
                 </div>
                 <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-400 uppercase">Destination</label>
+                    <label className="text-xs font-bold text-gray-400 uppercase">{t('destination')}</label>
                     <Input 
                         placeholder="Destination Address" 
                         value={dest}
@@ -272,10 +274,10 @@ export function ETACalculator() {
              </div>
           </Card>
 
-          <Card title="Vehicle & Load">
+          <Card title={t('vehicle_and_load') || 'Vehicle & Load'}>
              <div className="space-y-4">
                 <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-400 uppercase">Vehicle Type</label>
+                    <label className="text-xs font-bold text-gray-400 uppercase">{t('vehicle_type') || 'Vehicle Type'}</label>
                     <Select value={vehicleType} onChange={(e) => setVehicleType(e.target.value)}>
                         <option>Heavy Truck (Class 8)</option>
                         <option>Van</option>
@@ -283,7 +285,7 @@ export function ETACalculator() {
                     </Select>
                 </div>
                 <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-400 uppercase">Load Weight</label>
+                    <label className="text-xs font-bold text-gray-400 uppercase">{t('load_weight') || 'Load Weight'}</label>
                     <Input placeholder="e.g. 5000 (kg)" value={loadKg as any} onChange={(e) => {
                         const v = e.target.value;
                         const n = parseFloat(v);
@@ -293,14 +295,14 @@ export function ETACalculator() {
              </div>
           </Card>
 
-          <Card title="Environmental Factors">
+          <Card title={t('environmental_factors') || 'Environmental Factors'}>
              <div className="space-y-4">
                 <div className="space-y-1">
                     <div className="flex justify-between items-center">
-                        <label className="text-xs font-bold text-gray-400 uppercase">Weather Condition</label>
+                        <label className="text-xs font-bold text-gray-400 uppercase">{t('weather_condition') || 'Weather Condition'}</label>
                         {isWeatherSynced && (
                             <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse">
-                                Live Synced
+                                {t('live_sync')}
                             </span>
                         )}
                     </div>
@@ -308,9 +310,9 @@ export function ETACalculator() {
                         value={weatherCondition} 
                         onChange={(e) => setWeatherCondition(e.target.value)}
                     >
-                        <option value="Clear Sky">Clear Sky/Cloud (Optimal)</option>
-                        <option value="Rain">Rain (+25% Time)</option>
-                        <option value="Snow">Heavy Rain (+50% Time)</option>
+                        <option value="Clear Sky">{t('clear_sky_cloud_optimal') || 'Clear Sky/Cloud (Optimal)'}</option>
+                        <option value="Rain">{t('rain_25_time') || 'Rain (+25% Time)'}</option>
+                        <option value="Snow">{t('heavy_rain_50_time') || 'Heavy Rain (+50% Time)'}</option>
                     </Select>
                 </div>
                 <div className={`text-sm p-3 rounded border-l-4 flex items-start gap-2 ${
@@ -321,8 +323,8 @@ export function ETACalculator() {
                     <AlertTriangle size={16} className="shrink-0 mt-0.5" />
                     <span>
                         {weatherCondition === "Clear Sky" 
-                            ? "Standard routing speed applied." 
-                            : `Caution: ${weatherCondition} detected. Safety buffer added to ETA.`}
+                            ? t('standard_routing_speed_applied') || "Standard routing speed applied."
+                            : t('caution_weather_detected')?.replace('{weather}', weatherCondition) || `Caution: ${weatherCondition} detected. Safety buffer added to ETA.`}
                     </span>
                 </div>
              </div>
@@ -330,44 +332,44 @@ export function ETACalculator() {
        </div>
 
        <div className="flex flex-col items-center justify-center pt-4 gap-3">
-          <Button 
-            className="px-8 py-2 text-sm font-bold shadow-lg shadow-blue-200 hover:shadow-blue-300 transform hover:-translate-y-1 transition-all"
-            onClick={handleCalculate}
-            disabled={loading}
-          >
-             {loading ? "Calculating..." : "Calculate ETA"}
-          </Button>
+                    <Button 
+                        className="px-8 py-2 text-sm font-bold shadow-lg shadow-blue-200 hover:shadow-blue-300 transform hover:-translate-y-1 transition-all"
+                        onClick={handleCalculate}
+                        disabled={loading}
+                    >
+                         {loading ? t('calculating') || "Calculating..." : t('calculate_eta')}
+                    </Button>
 
           {eta && (
               <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
-                  <span className="text-[9px] text-gray-400 uppercase font-bold mb-0.5">Estimated Arrival</span>
+                  <span className="text-[9px] text-gray-400 uppercase font-bold mb-0.5">{t('estimated_arrival') || 'Estimated Arrival'}</span>
                   <div className="text-3xl font-black text-blue-600 bg-blue-50 px-6 py-3 rounded-xl border border-blue-100 shadow-sm">
                       {eta}
                   </div>
                                     {etaDetails && (
                                         <div className="mt-3 text-xs text-gray-600 space-y-1 bg-gray-50 p-3 rounded-lg border border-gray-200 max-w-md">
                                             <div className="flex justify-between">
-                                                <span>Route Distance:</span>
+                                                <span>{t('road_distance') || 'Route Distance'}:</span>
                                                 <strong>{settings.distanceUnit === 'km' ? (etaDetails.distance / 1000).toFixed(1) : (etaDetails.distance / 1000 * 0.621371).toFixed(1)} {settings.distanceUnit === 'km' ? 'km' : 'mi'}</strong>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span>Base Time (Ideal):</span>
+                                                <span>{t('baseline') || 'Baseline'} ({t('ideal') || 'Ideal'}):</span>
                                                 <strong>{Math.round((etaDetails.baseSeconds||0)/60)} min</strong>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span>Time Multiplier:</span>
+                                                <span>{t('time_multiplier') || 'Time Multiplier'}:</span>
                                                 <strong className="text-orange-600">{etaDetails.multiplier}x</strong>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span>Safety Score:</span>
+                                                <span>{t('safety_score') || 'Safety Score'}:</span>
                                                 <strong className={etaDetails.safetyScore >= 70 ? 'text-green-600' : 'text-orange-600'}>{etaDetails.safetyScore}</strong>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span>Rain Probability:</span>
+                                                <span>{t('rain_probability') || 'Rain Probability'}:</span>
                                                 <strong className="text-blue-600">{etaDetails.rainProbability?.toFixed(1)}%</strong>
                                             </div>
                                             <div className="pt-2 mt-2 border-t border-gray-300 flex justify-between">
-                                                <span className="font-semibold">Arrival Time:</span>
+                                                <span className="font-semibold">{t('arrival_time') || 'Arrival Time'}:</span>
                                                 <strong className="text-blue-600">{etaDetails.arrival}</strong>
                                             </div>
                                         </div>

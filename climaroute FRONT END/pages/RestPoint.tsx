@@ -7,6 +7,7 @@ import {
 import { MapContainer, TileLayer, Marker, Polyline, useMap, Popup } from 'react-leaflet';
 import { apiService } from '../services/apiservice';
 import { useSettings } from '../contexts/SettingsContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -55,6 +56,7 @@ function FitBounds({ coords }: { coords: [number, number] | null }) {
 
 export function RestPoint() {
     const { settings } = useSettings();
+    const { t } = useLanguage();
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
     const [userLocationName, setUserLocationName] = useState<string>("Fetching location...");
     const [isLocationLoading, setIsLocationLoading] = useState(true);
@@ -263,8 +265,8 @@ export function RestPoint() {
     return (
         <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col">
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 shrink-0">
-                <h2 className="text-2xl font-bold text-slate-800">Weather-Aware Rest Points</h2>
-                <p className="text-sm text-slate-500 mt-1">Smart rest stop suggestions based on real-time weather conditions</p>
+                <h2 className="text-2xl font-bold text-slate-800">{t('weather_aware_rest_points')}</h2>
+                <p className="text-sm text-slate-500 mt-1">{t('smart_rest_stop_suggestions')}</p>
             </div>
 
             {/* TOP: Map Section */}
@@ -330,7 +332,7 @@ export function RestPoint() {
                         <div className="space-y-4">
                             <div>
                                 <label className="text-xs font-bold text-gray-500 uppercase block mb-2">
-                                    <MapPin size={12} className="inline mr-1" /> Your Location
+                                    <MapPin size={12} className="inline mr-1" /> {t('your_location')}
                                 </label>
                                 <div className={`p-3 rounded-lg border text-sm ${isLocationLoading ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'}`}>
                                     <div className="flex items-center gap-2">
@@ -350,7 +352,7 @@ export function RestPoint() {
                                     onClick={handleSearch} 
                                     disabled={loading || !userLocation}
                                 >
-                                    {loading ? 'Searching...' : 'Find Rest Points'}
+                                    {loading ? t('searching') : t('find_rest_points')}
                                 </Button>
                             ) : (
                                 <Button 
@@ -407,7 +409,7 @@ export function RestPoint() {
                                                 disabled={isNavigating}
                                             >
                                                 <Navigation size={16} className="mr-2" />
-                                                {isNavigating && navigatingTo?.id === spot.id ? 'Navigating...' : 'Navigate'}
+                                                {isNavigating && navigatingTo?.id === spot.id ? t('navigating') : t('navigate')}
                                             </Button>
                                         </div>
                                     </div>

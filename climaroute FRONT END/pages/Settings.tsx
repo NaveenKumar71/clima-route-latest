@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
+import { LanguageProvider, useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { Card, Button, Input } from '../components/Layout';
 import { apiService } from '../services/apiservice';
 import { User, Smartphone, Mail, Save, Lock, Truck } from 'lucide-react';
 
-export default function Settings() {
+function SettingsContent() {
+      const { language, setLanguage, t } = useLanguage();
    const [loading, setLoading] = useState(false);
    const { user } = useAuth();
    const { settings, setSettings } = useSettings();
@@ -116,8 +118,8 @@ export default function Settings() {
       })();
    }, [user?.email]);
 
-  return (
-    <div className="max-w-5xl mx-auto space-y-6">
+   return (
+      <div className="max-w-5xl mx-auto space-y-6">
       {/* Save Message Toast */}
       {saveMessage && (
         <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg border ${
@@ -140,22 +142,22 @@ export default function Settings() {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Settings</h2>
-          <p className="text-sm text-slate-500 mt-1">Manage your profile and application preferences</p>
-        </div>
-        <Button onClick={handleSave} disabled={loading} className="shadow-lg shadow-blue-900/20 w-full sm:w-auto">
-           <Save size={18} />
-           {loading ? 'Saving...' : 'Save Changes'}
-        </Button>
-      </div>
+         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+            <div>
+                <h2 className="text-2xl font-bold text-slate-800">{t('settings')}</h2>
+                <p className="text-sm text-slate-500 mt-1">{t('manage_profile')}</p>
+            </div>
+              <Button onClick={handleSave} disabled={loading} className="shadow-lg shadow-blue-900/20 w-full sm:w-auto">
+                 <Save size={18} />
+                 {loading ? t('save_changes') : t('save_changes')}
+              </Button>
+         </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left Column: Profile */}
         <div className="space-y-6">
-          <Card title="Profile Information">
+          <Card title={t('profile_information')}>
             <div className="flex flex-col items-center mb-6">
               <div className="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3 border-4 border-white shadow-sm relative">
                 <User size={40} />
@@ -163,31 +165,31 @@ export default function Settings() {
                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                 </button>
               </div>
-              <h3 className="text-lg font-bold text-gray-800">{user?.name ?? 'Your Name'}</h3>
-              <p className="text-sm text-gray-500">{user?.role === 'admin' ? 'Administrator' : 'Fleet Driver'}</p>
+              <h3 className="text-lg font-bold text-gray-800">{user?.name ?? t('full_name')}</h3>
+              <p className="text-sm text-gray-500">{user?.role === 'admin' ? 'Administrator' : t('fleet_driver')}</p>
             </div>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Full Name</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('full_name')}</label>
                 <Input value={userName} onChange={(e) => setUserName(e.target.value)} />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Email Address</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('email_address')}</label>
                 <div className="relative">
                    <Mail className="absolute left-3 top-2.5 text-gray-400" size={16} />
                    <Input value={userEmail} onChange={(e) => setUserEmail(e.target.value)} className="pl-10" />
                 </div>
               </div>
                <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Phone Number</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('phone_number')}</label>
                 <div className="relative">
                    <Smartphone className="absolute left-3 top-2.5 text-gray-400" size={16} />
                    <Input value={userPhone} onChange={(e) => setUserPhone(e.target.value)} className="pl-10" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Password</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('password')}</label>
                 <div className="relative">
                    <Lock className="absolute left-3 top-2.5 text-gray-400" size={16} />
                    <Input type="text" value={userPassword} onChange={(e) => setUserPassword(e.target.value)} className="pl-10" />
@@ -200,17 +202,29 @@ export default function Settings() {
         {/* Right Column: Settings */}
         <div className="lg:col-span-2 space-y-6">
           
-          <Card title="General Preferences" className="relative overflow-hidden">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card title={t('general_preferences')} className="relative overflow-hidden">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Language Preference */}
+                        <div>
+                           <label className="block text-sm font-medium text-gray-700 mb-2">{t('language')}</label>
+                           <select
+                              className="w-full p-2 border rounded"
+                              value={language}
+                              onChange={e => setLanguage(e.target.value as 'en' | 'ta')}
+                           >
+                              <option value="en">{t('english')}</option>
+                              <option value="ta">{t('tamil')}</option>
+                           </select>
+                        </div>
                 <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-2">Time Format</label>
+                   <label className="block text-sm font-medium text-gray-700 mb-2">{t('time_format')}</label>
                    <div className="flex bg-gray-100 p-1 rounded-lg">
                       <button onClick={() => handleTimeFormatChange('12')} className={`flex-1 py-1.5 text-sm font-medium rounded ${settings.timeFormat==='12' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:bg-gray-200'}`}>12-hour</button>
                       <button onClick={() => handleTimeFormatChange('24')} className={`flex-1 py-1.5 text-sm font-medium rounded ${settings.timeFormat==='24' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:bg-gray-200'}`}>24-hour</button>
                    </div>
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-2">Temperature</label>
+                   <label className="block text-sm font-medium text-gray-700 mb-2">{t('temperature')}</label>
                    <div className="flex bg-gray-100 p-1 rounded-lg">
                       <button onClick={() => handleTemperatureChange('F')} className={`flex-1 py-1.5 text-sm font-medium rounded ${settings.temperatureUnit==='F' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:bg-gray-200'}`}>°F Fahrenheit</button>
                       <button onClick={() => handleTemperatureChange('C')} className={`flex-1 py-1.5 text-sm font-medium rounded ${settings.temperatureUnit==='C' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:bg-gray-200'}`}>°C Celsius</button>
@@ -219,32 +233,36 @@ export default function Settings() {
              </div>
           </Card>
 
-          <Card title="Fleet Details">
+          <Card title={t('fleet_details')}>
              <div className="space-y-4">
                 <div>
-                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Vehicle ID</label>
+                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('vehicle_id')}</label>
                    <div className="relative">
                       <Truck className="absolute left-3 top-2.5 text-gray-400" size={16} />
-                      <Input 
-                         value={vehicleId} 
-                         onChange={(e) => setVehicleId(e.target.value)} 
-                         placeholder="Enter your vehicle ID (e.g., FLT-8834)"
-                         className="pl-10" 
-                      />
+                                 <Input 
+                                     value={vehicleId} 
+                                     onChange={(e) => setVehicleId(e.target.value)} 
+                                     placeholder="Enter your vehicle ID (e.g., FLT-8834)"
+                                     className="pl-10" 
+                                 />
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">This ID will be used across all trip records</p>
+                        </div>
+                        <div className="pt-4 border-t border-gray-100">
+                            <div className="flex justify-between items-center text-sm">
+                                  <span className="text-gray-600">{t('license_status')}</span>
+                                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">{t('active')}</span>
+                            </div>
+                        </div>
                    </div>
-                   <p className="text-xs text-gray-400 mt-1">This ID will be used across all trip records</p>
-                </div>
-                <div className="pt-4 border-t border-gray-100">
-                   <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600">License Status</span>
-                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">Active</span>
-                   </div>
-                </div>
-             </div>
-          </Card>
+               </Card>
 
-        </div>
+            </div>
+         </div>
       </div>
-    </div>
-  );
+   );
+}
+
+export default function Settings() {
+   return <SettingsContent />;
 }

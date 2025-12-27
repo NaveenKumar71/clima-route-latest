@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/Layout';
 import { CloudRain, AlertTriangle, Clock, Activity, Navigation, Crosshair } from 'lucide-react';
@@ -37,6 +38,7 @@ export default function Dashboard() {
   const { settings } = useSettings();
   const { user } = useAuth();
   const { sosStatus, resolveActiveAlert } = useSos();
+  const { t } = useLanguage();
   
   // --- STATE MANAGEMENT ---
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -175,8 +177,8 @@ export default function Dashboard() {
   return (
     <>
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-4">
-        <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
-        <p className="text-sm text-slate-500 mt-1">Welcome back, {user?.name || 'Driver'}.</p>
+        <h2 className="text-2xl font-bold text-slate-800">{t('dashboard')}</h2>
+        <p className="text-sm text-slate-500 mt-1">{t('welcome_back')}, {user?.name || t('driver')}.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -189,9 +191,9 @@ export default function Dashboard() {
           >
             <div className="absolute top-4 left-4 z-[1000] bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-sm flex items-center gap-2">
               <span className={`w-3 h-3 rounded-full ${gpsFound ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
-              <span className="text-sm font-bold text-gray-700">
-                  {locationError ? <span className="text-red-500">{locationError}</span> : (gpsFound ? "Current Location" : "Locating...")}
-              </span>
+                <span className="text-sm font-bold text-gray-700">
+                  {locationError ? <span className="text-red-500">{locationError}</span> : (gpsFound ? t('current_location') : t('locating'))}
+                </span>
             </div>
             
             <button 
@@ -225,9 +227,9 @@ export default function Dashboard() {
             </MapContainer>
 
             <div className="absolute bottom-4 right-4 z-[1000]">
-               <button className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 font-bold hover:bg-blue-700 transition-colors">
-                  <Navigation size={18} /> Plan Route
-               </button>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 font-bold hover:bg-blue-700 transition-colors">
+                <Navigation size={18} /> {t('plan_route')}
+              </button>
             </div>
           </Card>
 
@@ -235,6 +237,7 @@ export default function Dashboard() {
           <Card 
             onClick={(e) => { e.stopPropagation(); navigate('/sos'); }} 
             className={`${sosStatus === 'Normal' ? 'bg-green-50 border-green-500 hover:bg-green-100' : 'bg-red-50 border-red-500 hover:bg-red-100'} border-l-4 cursor-pointer transition-colors relative group/sos`}
+            title={t('emergency_sos')}
           >
              <div className="flex items-start gap-4">
                 <div className={`${sosStatus === 'Normal' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'} p-3 rounded-full`}>
@@ -243,24 +246,24 @@ export default function Dashboard() {
                 <div className="flex-1">
                    <div className="flex justify-between items-start">
                       <h3 className={`text-lg font-bold ${sosStatus === 'Normal' ? 'text-green-700' : 'text-red-700'}`}>
-                        System Status: {sosStatus}
+                        {t('system_status')}: {sosStatus === 'Normal' ? t('normal') : t('abnormal')}
                       </h3>
                       {sosStatus === 'Abnormal' && (
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
-                            if(window.confirm("Are you sure you want to resolve this alert and return to Normal status?")) {
+                            if(window.confirm(t('resolve_confirm'))){
                               resolveActiveAlert();
                             }
                           }}
                           className="bg-white text-red-600 border border-red-200 px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-600 hover:text-white transition-all shadow-sm"
                         >
-                          Resolve Now
+                          {t('resolve_now')}
                         </button>
                       )}
                    </div>
                    <p className={`${sosStatus === 'Normal' ? 'text-green-600/80' : 'text-red-600/80'} text-sm mt-1`}>
-                     {sosStatus === 'Normal' ? 'Tap here to report an emergency or SOS.' : 'Emergency detected! Tap for details.'}
+                     {sosStatus === 'Normal' ? t('tap_report_emergency') : t('emergency_detected')}
                    </p>
                 </div>
              </div>
@@ -272,13 +275,13 @@ export default function Dashboard() {
           
           {/* 1. RECENT ALERTS (From Database) */}
           <Card 
-            title="Recent Alerts" 
+            title={t('recent_alerts')} 
             onClick={() => navigate('/notifications')} 
             className="cursor-pointer hover:bg-blue-50/50 transition-colors"
           >
              <div className="space-y-4">
-               {loading ? <p className="text-sm text-gray-400">Loading alerts...</p> : notifications.length === 0 ? (
-                 <p className="text-sm text-gray-400">-- No alerts --</p>
+               {loading ? <p className="text-sm text-gray-400">{t('loading_alerts')}</p> : notifications.length === 0 ? (
+                 <p className="text-sm text-gray-400">{t('no_alerts')}</p>
                ) : (
                  notifications.map((notif) => (
                    <div key={notif.id} className="flex items-start gap-3 pb-3 border-b border-gray-50 last:border-0 last:pb-0">
@@ -300,14 +303,14 @@ export default function Dashboard() {
           >
             <div className="flex items-center gap-3 mb-3">
                <Activity className="text-purple-500" size={20} />
-               <h3 className="font-semibold text-gray-700">Adaptive Speed</h3>
+               <h3 className="font-semibold text-gray-700">{t('adaptive_speed')}</h3>
             </div>
             <div className="text-3xl font-bold text-gray-900">
               {liveSpeed}
-              <span className="text-base font-normal text-gray-500"> {settings.distanceUnit === 'mi' ? 'mph' : 'km/h'}</span>
+              <span className="text-base font-normal text-gray-500"> {settings.distanceUnit === 'mi' ? t('mph') : t('kmh')}</span>
             </div>
             <p className="text-xs text-gray-500 mt-1">
-                {liveSpeed === "--" ? "Not Active" : "Optimization Active"}
+                {liveSpeed === "--" ? t('not_active') : t('optimization_active')}
             </p>
           </Card>
 
@@ -319,7 +322,7 @@ export default function Dashboard() {
                className="!p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:scale-105 active:scale-95 transition-transform"
              >
                 <Clock className="text-blue-500 mb-2" size={24} />
-                <span className="text-xs text-gray-400 uppercase font-bold">ETA</span>
+                <span className="text-xs text-gray-400 uppercase font-bold">{t('eta')}</span>
                 <span className="font-bold text-gray-800">{currentEta}</span>
              </Card>
 
@@ -329,7 +332,7 @@ export default function Dashboard() {
                className="!p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:scale-105 active:scale-95 transition-transform"
              >
                 <CloudRain className="text-blue-500 mb-2" size={24} />
-                <span className="text-xs text-gray-400 uppercase font-bold">Temp</span>
+                <span className="text-xs text-gray-400 uppercase font-bold">{t('temperature')}</span>
                 <span className="font-bold text-gray-800">{currentTemp}°{settings.temperatureUnit}</span>
              </Card>
           </div>

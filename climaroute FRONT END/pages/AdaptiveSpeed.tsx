@@ -10,6 +10,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { useSettings, formatTime } from '../contexts/SettingsContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // --- STYLED COMPONENTS ---
 const DashboardCard = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
@@ -30,7 +31,8 @@ function distanceKm(a: [number, number], b: [number, number]): number {
 }
 
 export default function AdaptiveSpeed() {
-   const { settings } = useSettings();
+    const { settings } = useSettings();
+    const { t } = useLanguage();
    const [segments, setSegments] = useState<any[]>([]);
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
@@ -225,8 +227,8 @@ export default function AdaptiveSpeed() {
    if (loading) return (
        <div className="h-screen w-full flex items-center justify-center bg-slate-50">
            <div className="text-center">
-               <div className="text-slate-400 font-medium animate-pulse text-lg">Loading Route Segmentation...</div>
-               <div className="text-slate-300 text-sm mt-2">Analyzing weather with AI model</div>
+               <div className="text-slate-400 font-medium animate-pulse text-lg">{t('loading_route_segmentation')}</div>
+               <div className="text-slate-300 text-sm mt-2">{t('analyzing_weather')}</div>
            </div>
        </div>
    );
@@ -235,9 +237,9 @@ export default function AdaptiveSpeed() {
        <div className="h-screen w-full flex items-center justify-center bg-slate-50">
            <div className="text-center p-8 bg-white rounded-xl shadow-lg border border-red-200">
                <AlertTriangle size={48} className="text-red-500 mx-auto mb-4"/>
-               <div className="text-red-600 font-bold text-lg mb-2">No Active Navigation</div>
+               <div className="text-red-600 font-bold text-lg mb-2">{t('no_active_navigation')}</div>
                <div className="text-slate-600 text-base">{error}</div>
-               <div className="mt-4 text-sm text-slate-500">Please go to Dynamic Re-Routing page and start navigation</div>
+               <div className="mt-4 text-sm text-slate-500">{t('navigation_entered')}</div>
            </div>
        </div>
    );
@@ -250,19 +252,19 @@ export default function AdaptiveSpeed() {
             <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
                 <div>
                     <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <Activity className="text-blue-600" size={20}/> Adaptive Speed Control
+                        <Activity className="text-blue-600" size={20}/> {t('adaptive_speed_control')}
                     </h1>
                     <p className="text-sm text-slate-500 mt-1 flex items-center gap-1">
                         <MapPin size={12}/> {tripData.origin} ➔ {tripData.destination}
                     </p>
                 </div>
                 <div className="text-right">
-                    <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Distance</span>
+                    <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('total_distance')}</span>
                     <div className="text-lg font-black text-slate-700">
                         {settings.distanceUnit === 'km' ? tripData.distance.toFixed(1) : (tripData.distance * 0.621371).toFixed(1)} {settings.distanceUnit === 'km' ? 'km' : 'mi'}
                     </div>
                     <div className="text-xs text-green-600 font-bold mt-0.5">
-                        Traveled: {settings.distanceUnit === 'km' ? traveledDistance.toFixed(2) : (traveledDistance * 0.621371).toFixed(2)} {settings.distanceUnit === 'km' ? 'km' : 'mi'}
+                        {t('traveled')}: {settings.distanceUnit === 'km' ? traveledDistance.toFixed(2) : (traveledDistance * 0.621371).toFixed(2)} {settings.distanceUnit === 'km' ? 'km' : 'mi'}
                     </div>
                 </div>
             </div>
@@ -272,17 +274,17 @@ export default function AdaptiveSpeed() {
                 {/* 1. LEFT: 5-SEGMENT TABLE */}
                 <DashboardCard className="lg:col-span-2 flex flex-col overflow-hidden">
                     <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Route Segmentation</h3>
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold">AI Weather Model</span>
+                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">{t('route_segmentation')}</h3>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold">{t('ai_weather_model')}</span>
                     </div>
                     <div className="p-2 overflow-auto flex-1">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="text-xs text-slate-400 font-bold uppercase border-b border-slate-100">
-                                    <th className="px-3 py-2">Location</th>
-                                    <th className="px-3 py-2">Type</th>
-                                    <th className="px-3 py-2 text-center text-blue-600">Rec. Speed</th>
-                                    <th className="px-3 py-2 text-right">Weather</th>
+                                    <th className="px-3 py-2">{t('location')}</th>
+                                    <th className="px-3 py-2">{t('type')}</th>
+                                    <th className="px-3 py-2 text-center text-blue-600">{t('rec_speed')}</th>
+                                    <th className="px-3 py-2 text-right">{t('weather')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -324,7 +326,7 @@ export default function AdaptiveSpeed() {
                 <div className="space-y-4 flex flex-col overflow-hidden">
                     <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow-lg p-4 text-white relative overflow-hidden flex-1 flex flex-col justify-center">
                         <div className="z-10 text-center">
-                            <h3 className="text-blue-100 text-sm font-bold uppercase tracking-wider mb-4">Current Speed</h3>
+                            <h3 className="text-blue-100 text-sm font-bold uppercase tracking-wider mb-4">{t('current_speed')}</h3>
                             <div className="flex items-center justify-center gap-2">
                                 <span className="text-7xl font-black tracking-tighter">
                                     {settings.distanceUnit === 'km' ? currentSpeed : Math.round(currentSpeed * 0.621371)}
@@ -335,7 +337,7 @@ export default function AdaptiveSpeed() {
                                 </div>
                             </div>
                             <div className="mt-6 p-3 bg-white/10 rounded-lg backdrop-blur-sm inline-block">
-                                <div className="text-xs text-blue-100 font-bold uppercase tracking-widest mb-1">Current Location</div>
+                                <div className="text-xs text-blue-100 font-bold uppercase tracking-widest mb-1">{t('current_location')}</div>
                                 <div className="text-sm font-bold">
                                     {currentPlace}
                                 </div>
@@ -349,15 +351,15 @@ export default function AdaptiveSpeed() {
                 <DashboardCard className="lg:col-span-3 !p-4 overflow-hidden flex flex-col">
                     <div className="flex justify-between items-center mb-3">
                         <h3 className="font-bold text-base text-slate-700 flex items-center gap-2">
-                            <TrendingUp className="text-blue-500" size={16}/> Speed Profile (Live)
+                            <TrendingUp className="text-blue-500" size={16}/> {t('speed_profile_live')}
                         </h3>
-                        <div className="text-xs text-slate-400">Real-time speed during travel • {speedHistory.length} data points</div>
+                        <div className="text-xs text-slate-400">{t('real_time_speed')} • {speedHistory.length} data points</div>
                     </div>
 
                     <div className="w-full flex-1 min-h-0">
                         {speedHistory.length === 0 ? (
                             <div className="h-full flex items-center justify-center text-slate-400 text-sm">
-                                Waiting for GPS data... Start moving to see speed profile.
+                                {t('waiting_gps')}
                             </div>
                         ) : (
                             <ResponsiveContainer width="100%" height="100%">

@@ -5,6 +5,7 @@ import { Navigation, StopCircle, Crosshair, MapPin, MousePointerClick, AlertTria
 import { apiService } from '../services/apiservice';
 import { useSettings } from '../contexts/SettingsContext';
 import { useSos } from '../contexts/SosContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -916,11 +917,12 @@ export function ReRouting() {
       }
     };
 
+  const { t } = useLanguage();
   return (
     <div className="h-[calc(100vh-140px)] flex flex-col">
        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-4">
-        <h2 className="text-2xl font-bold text-slate-800">Dynamic Re-Routing</h2>
-        <p className="text-sm text-slate-500 mt-1">AI-Powered Weather Navigation</p>
+        <h2 className="text-2xl font-bold text-slate-800">{t('dynamic_rerouting')}</h2>
+        <p className="text-sm text-slate-500 mt-1">{t('ai_weather_navigation')}</p>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
@@ -1014,7 +1016,7 @@ export function ReRouting() {
            </MapContainer>
         </div>
 
-        <Card title="Plan Your Journey" className="h-fit">
+        <Card title={t('plan_your_journey')} className="h-fit">
           <div className="space-y-6">
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex gap-2 items-start">
@@ -1023,46 +1025,46 @@ export function ReRouting() {
               </div>
             )}
             <div className="space-y-3">
-              <div><label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Origin</label><div className="flex gap-2"><Input className="text-sm py-2" value={origin} onChange={(e) => setOrigin(e.target.value)} placeholder="Type address..." /><button onClick={handleUseCurrentLoc} className="p-2 bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200 transition-colors" title="Get current location"><Crosshair size={18} /></button></div><small className="text-[11px] text-gray-400 block mt-1">{originAddress}</small></div>
-              <div><label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Destination</label><div className="relative"><Input className="text-sm py-2" value={dest} onChange={(e) => setDest(e.target.value)} placeholder="Click map or type address..." /><MapPin size={14} className="absolute right-3 top-3 text-gray-400" /></div><small className="text-[11px] text-gray-400 block mt-1">{destAddress}</small></div>
+              <div><label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">{t('origin')}</label><div className="flex gap-2"><Input className="text-sm py-2" value={origin} onChange={(e) => setOrigin(e.target.value)} placeholder="Type address..." /><button onClick={handleUseCurrentLoc} className="p-2 bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200 transition-colors" title="Get current location"><Crosshair size={18} /></button></div><small className="text-[11px] text-gray-400 block mt-1">{originAddress}</small></div>
+              <div><label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">{t('destination')}</label><div className="relative"><Input className="text-sm py-2" value={dest} onChange={(e) => setDest(e.target.value)} placeholder="Click map or type address..." /><MapPin size={14} className="absolute right-3 top-3 text-gray-400" /></div><small className="text-[11px] text-gray-400 block mt-1">{destAddress}</small></div>
               {/* Mock GPS toggle removed from UI per request; mock remains enabled when no sensor. */}
             </div>
             
             {!isNavigating ? (
                 <div className="space-y-3">
-                    <Button className="w-full justify-center py-2 text-sm" onClick={handleFindRoutes} disabled={loading}>{loading ? "Analyzing Routes..." : "1. Find Routes"}</Button>
+                    <Button className="w-full justify-center py-2 text-sm" onClick={handleFindRoutes} disabled={loading}>{loading ? t('analyzing_routes') : `1. ${t('find_route')}`}</Button>
                     
                     {routeData && selectedRouteIndex === null && (
                         <div className="text-center p-3 bg-yellow-50 text-yellow-800 text-sm rounded-lg border border-yellow-200 flex items-center justify-center gap-2 animate-pulse">
-                            <MousePointerClick size={16}/> Please select a route (Gray Line) on the map.
+                          <MousePointerClick size={16}/> {t('please_select_route')}
                         </div>
                     )}
 
                     {selectedRouteIndex !== null && routeData && (
                         <div className="animate-fade-in space-y-3">
                             <div className="bg-blue-50 p-2 rounded-lg border border-blue-200 shadow-sm text-sm">
-                              <p className="text-[11px] text-blue-600 font-bold uppercase mb-2">Selected Path Details</p>
+                              <p className="text-[11px] text-blue-600 font-bold uppercase mb-2">{t('selected_path_details')}</p>
                               <div className="grid grid-cols-2 gap-2 text-xs text-gray-700 mb-2">
                                     <div>
-                                  <span className="text-gray-500 text-[11px]">Safety</span>
+                                  <span className="text-gray-500 text-[11px]">{t('safety')}</span>
                                   <p className="text-base font-bold text-green-600">{Math.round(routeData.alternatives[selectedRouteIndex].safetyScore)}/100</p>
                                     </div>
                                     <div>
-                                  <span className="text-gray-500 text-[11px]">Distance</span>
+                                  <span className="text-gray-500 text-[11px]">{t('distance')}</span>
                                   <p className="text-base font-bold text-blue-600">{(routeData.alternatives[selectedRouteIndex].distance / 1000).toFixed(1)} km</p>
                                     </div>
                                     <div>
-                                  <span className="text-gray-500 text-[11px]">Duration</span>
+                                  <span className="text-gray-500 text-[11px]">{t('duration')}</span>
                                   <p className="text-base font-bold text-orange-600">{Math.round(routeData.alternatives[selectedRouteIndex].duration / 60)} min</p>
                                     </div>
                                     <div>
-                                  <span className="text-gray-500 text-[11px]">Rain Prob</span>
+                                  <span className="text-gray-500 text-[11px]">{t('rain_prob')}</span>
                                   <p className="text-base font-bold text-purple-600">{(routeData.alternatives[selectedRouteIndex].rainProbability || 0).toFixed(1)}%</p>
                                     </div>
                                 </div>
                             </div>
                             <Button className="w-full justify-center py-2 text-sm bg-green-600 hover:bg-green-700 shadow-md shadow-green-200" onClick={startNavigation}>
-                              <Navigation className="mr-2" size={16}/> 2. Start Live Navigation
+                              <Navigation className="mr-2" size={16}/> 2. {t('start_live_navigation')}
                             </Button>
                         </div>
                     )}
@@ -1070,10 +1072,10 @@ export function ReRouting() {
             ) : (
                 <div className="space-y-3">
                     <div className="p-3 bg-green-50 rounded-lg text-center border border-green-200">
-                        <p className="text-green-800 font-bold text-xs uppercase mb-1">Live Tracking Active</p>
-                        <p className="text-[11px] text-green-700 mb-1">Auto-reroute active (Test: 10s)</p>
+                        <p className="text-green-800 font-bold text-xs uppercase mb-1">{t('live_tracking_active')}</p>
+                        <p className="text-[11px] text-green-700 mb-1">{t('auto_reroute_active')}</p>
                         {distanceToDestination !== null && (
-                          <p className="text-[10px] text-gray-500 mt-1">Distance to destination: {distanceToDestination < 1000 ? `${Math.round(distanceToDestination)}m` : `${(distanceToDestination/1000).toFixed(1)}km`}</p>
+                          <p className="text-[10px] text-gray-500 mt-1">{t('distance_to_destination')} {distanceToDestination < 1000 ? `${Math.round(distanceToDestination)}m` : `${(distanceToDestination/1000).toFixed(1)}km`}</p>
                         )}
                     </div>
                     
@@ -1094,27 +1096,27 @@ export function ReRouting() {
                           `}</style>
                           <p className="text-green-700 font-semibold text-sm flex items-center justify-center gap-2">
                             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                            You are near the destination.
+                            {t('you_are_near_destination')}
                           </p>
-                          <p className="text-green-600 text-xs mt-1">Do you want to complete your journey?</p>
+                          <p className="text-green-600 text-xs mt-1">{t('complete_journey_question')}</p>
                         </div>
                         <Button className="w-full justify-center py-2 text-sm bg-emerald-600 hover:bg-emerald-700 shadow-md" onClick={completeAndSave}>
-                            <Navigation className="mr-2" size={16}/> Complete & Save
+                          <Navigation className="mr-2" size={16}/> {t('complete_and_save')}
                         </Button>
                       </div>
                     )}
                     
                     {/* 2. Pause/Resume */}
                     <Button 
-                        className={`w-full justify-center py-2 text-sm shadow-md ${breakModeActive ? 'bg-blue-600 hover:bg-blue-700' : 'bg-amber-500 hover:bg-amber-600'}`} 
-                        onClick={handleTogglePause}
+                      className={`w-full justify-center py-2 text-sm shadow-md ${breakModeActive ? 'bg-blue-600 hover:bg-blue-700' : 'bg-amber-500 hover:bg-amber-600'}`} 
+                      onClick={handleTogglePause}
                     >
-                        {breakModeActive ? <><Play className="mr-2" size={16}/> Resume Navigation</> : <><Pause className="mr-2" size={16}/> Pause / Break</>}
+                      {breakModeActive ? <><Play className="mr-2" size={16}/> {t('resume_navigation')}</> : <><Pause className="mr-2" size={16}/> {t('pause_break')}</>}
                     </Button>
                     
                     {/* 3. Reset */}
                     <Button className="w-full justify-center py-2 text-sm bg-red-600 hover:bg-red-700 shadow-md" onClick={handleResetNavigation}>
-                        <RotateCcw className="mr-2" size={16}/> Reset Navigation
+                      <RotateCcw className="mr-2" size={16}/> {t('restart_navigation')}
                     </Button>
                 </div>
             )}

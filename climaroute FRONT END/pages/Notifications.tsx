@@ -4,10 +4,12 @@ import {
     CloudRain, CloudLightning, AlertTriangle, Bell, Inbox, ShieldAlert, Timer
 } from 'lucide-react';
 import { apiService, getCurrentUser } from '../services/apiservice';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useSos } from '../contexts/SosContext';
 
 // --- Weather & System Alerts Notification Page ---
 export function Notifications() {
+    const { t } = useLanguage();
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { sosStatus } = useSos();
@@ -154,10 +156,9 @@ export function Notifications() {
       <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
         <Inbox className="text-gray-400" size={40} />
       </div>
-      <h3 className="text-lg font-semibold text-gray-700 mb-2">No Active Alerts</h3>
+      <h3 className="text-lg font-semibold text-gray-700 mb-2">{t('no_active_alerts') || 'No Active Alerts'}</h3>
       <p className="text-sm text-gray-500 max-w-sm">
-        You're all clear! There are no weather or system alerts at this time. 
-        We'll notify you when severe weather is detected or system status changes.
+        {t('no_alerts_message') || "You're all clear! There are no weather or system alerts at this time. We'll notify you when severe weather is detected or system status changes."}
       </p>
     </div>
   );
@@ -174,13 +175,13 @@ export function Notifications() {
             <Bell className="text-blue-600" size={20} />
           </div>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-slate-800">Alerts</h2>
-            <p className="text-sm text-slate-500">Weather alerts & system status notifications</p>
+            <h2 className="text-2xl font-bold text-slate-800">{t('alerts')}</h2>
+            <p className="text-sm text-slate-500">{t('weather_alerts')} & {t('system_status_notification')}</p>
           </div>
           {sosStatus === 'Abnormal' && (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-red-100 rounded-full">
               <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-              <span className="text-xs font-bold text-red-700">System Abnormal</span>
+              <span className="text-xs font-bold text-red-700">{t('system_abnormal') || 'System Abnormal'}</span>
             </div>
           )}
         </div>
@@ -200,7 +201,7 @@ export function Notifications() {
               <div className="flex items-center justify-between px-1 mb-4">
                 <h3 className="text-sm font-bold uppercase text-red-600 flex items-center gap-2">
                   <ShieldAlert size={14} />
-                  System Alerts ({systemAlerts.length})
+                  {t('system_alerts')} ({systemAlerts.length})
                 </h3>
               </div>
               {systemAlerts.map(alert => (
@@ -215,7 +216,7 @@ export function Notifications() {
               <div className="flex items-center justify-between px-1 mb-4">
                 <h3 className="text-sm font-bold uppercase text-blue-600 flex items-center gap-2">
                   <CloudRain size={14} />
-                  Weather Alerts ({weatherAlerts.length})
+                  {t('weather_alerts')} ({weatherAlerts.length})
                 </h3>
               </div>
               {weatherAlerts.map(alert => (

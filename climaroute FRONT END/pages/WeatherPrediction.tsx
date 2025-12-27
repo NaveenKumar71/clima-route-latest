@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { apiService, getCurrentUser } from '../services/apiservice';
 import { useSettings, convertTemp, formatTime } from '../contexts/SettingsContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // Background images (placed in components/)
 import skyImg from '../components/sky.jpg';
@@ -54,6 +55,7 @@ const getRiskDetails = (rainProb: number) => {
 
 export function Weather() {
     const { settings } = useSettings();
+    const { t } = useLanguage();
     const [currentWeather, setCurrentWeather] = useState<any>(null);
     const [historyData, setHistoryData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -166,7 +168,7 @@ export function Weather() {
         return (
             <div className="h-full flex items-center justify-center text-gray-400 animate-pulse">
                 <Loader size={24} className="animate-spin mr-2" />
-                Loading Weather Data...
+                {t('loading_weather_data') || 'Loading Weather Data...'}
             </div>
         );
     }
@@ -174,7 +176,7 @@ export function Weather() {
     if (error && !currentWeather) {
         return (
             <div className="h-full flex items-center justify-center text-red-400">
-                Weather Service Unavailable
+                {t('weather_service_unavailable') || 'Weather Service Unavailable'}
             </div>
         );
     }
@@ -198,20 +200,20 @@ export function Weather() {
         <div className="h-[calc(100vh-140px)] flex flex-col">
             {/* Header */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-4">
-                <h2 className="text-2xl font-bold text-slate-800">AI Weather Prediction</h2>
-                <p className="text-sm text-slate-500 mt-1">Real-time forecasts powered by deep learning</p>
+                <h2 className="text-2xl font-bold text-slate-800">{t('ai_weather_prediction')}</h2>
+                <p className="text-sm text-slate-500 mt-1">{t('realtime_forecast_deep_learning')}</p>
             </div>
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-3">
                     {stormDetected && (
                         <div className="flex items-center gap-2 bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded-full font-bold animate-pulse">
                             <AlertTriangle size={18} />
-                            Storm Detected!
+                            {t('storm_detected')}
                         </div>
                     )}
                     <span className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-bold border border-blue-100 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-                        Live Model
+                        {t('live_model')}
                     </span>
                 </div>
             </div>
@@ -296,7 +298,7 @@ export function Weather() {
                     <Card className="overflow-hidden flex flex-col p-5">
                         <div className="flex items-center gap-2 mb-3 border-b border-gray-200 pb-2">
                             <span className="text-lg">🕐</span>
-                            <h3 className="font-bold text-base text-gray-700">Hourly Forecast (Last 24 Hours)</h3>
+                            <h3 className="font-bold text-base text-gray-700">{t('hourly_forecast')} ({t('last_24_hours')})</h3>
                         </div>
                         <div className="flex gap-2 overflow-x-auto pb-2">
                             {hourlyData.length > 0 ? (
@@ -319,7 +321,7 @@ export function Weather() {
                                 })
                             ) : (
                                 <div className="w-full flex items-center justify-center text-gray-400">
-                                    No hourly data available
+                                    {t('no_hourly_data')}
                                 </div>
                             )}
                         </div>
@@ -329,7 +331,7 @@ export function Weather() {
                     <Card className="overflow-hidden flex flex-col p-5">
                         <div className="flex items-center gap-2 mb-3 border-b border-gray-200 pb-2">
                             <Calendar size={18} className="text-blue-600" />
-                            <h3 className="font-bold text-base text-gray-700">Weekly Forecast</h3>
+                            <h3 className="font-bold text-base text-gray-700">{t('weekly_forecast')}</h3>
                         </div>
                         <div className="flex gap-2 flex-wrap">
                             {weeklyData.length > 0 ? (
@@ -349,7 +351,7 @@ export function Weather() {
                                 ))
                             ) : (
                                 <div className="w-full flex items-center justify-center text-gray-400">
-                                    No weekly data available
+                                    {t('no_weekly_data')}
                                 </div>
                             )}
                         </div>

@@ -7,8 +7,10 @@ import {
 import { apiService } from '../services/apiservice';
 import { useSos } from '../contexts/SosContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export function SOS() {
+    const { t } = useLanguage();
   const { 
     sosStatus, 
     idleTimeSeconds, 
@@ -227,9 +229,9 @@ export function SOS() {
       {/* Header */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex-shrink-0">
         <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-          <AlertTriangle className="text-red-600"/> SOS & Vehicle Monitoring
+          <AlertTriangle className="text-red-600"/> {t('sos_and_vehicle_monitoring')}
         </h2>
-        <p className="text-sm text-slate-500 mt-1">Emergency alerts and real-time vehicle diagnostics</p>
+        <p className="text-sm text-slate-500 mt-1">{t('emergency_alarms_and_vehicle_diagnostics')}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0 overflow-auto">
@@ -248,17 +250,17 @@ export function SOS() {
           {/* Navigation & Vehicle Status - Combined Row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase block mb-1">Navigation</label>
+              <label className="text-xs font-bold text-gray-500 uppercase block mb-1">{t('navigation')}</label>
               <div className={`p-2 rounded-lg flex items-center gap-2 ${navigationActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                 <span className={`w-2.5 h-2.5 rounded-full ${navigationActive ? 'bg-green-600 animate-pulse' : 'bg-gray-600'}`}></span>
-                <span className="font-bold text-xs">{navigationActive ? 'Active' : 'Inactive'}</span>
+                <span className="font-bold text-xs">{navigationActive ? t('active') : t('inactive')}</span>
               </div>
             </div>
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase block mb-1">Vehicle</label>
+              <label className="text-xs font-bold text-gray-500 uppercase block mb-1">{t('vehicle')}</label>
               <div className={`p-2 rounded-lg flex items-center gap-2 ${getVehicleStatusColor()}`}>
                 <span className={`w-2.5 h-2.5 rounded-full ${getVehicleDotColor()}`}></span>
-                <span className="font-bold text-xs">{getVehicleStatusDisplay()}</span>
+                <span className="font-bold text-xs">{t(getVehicleStatusDisplay().toLowerCase().replace(/\s/g, '_'))}</span>
               </div>
             </div>
           </div>
@@ -266,14 +268,14 @@ export function SOS() {
           {/* GPS Location */}
           <div>
             <label className="text-xs font-bold text-gray-500 uppercase block mb-1">
-              <MapPin size={12} className="inline mr-1" /> Current Location
+              <MapPin size={12} className="inline mr-1" /> {t('current_location')}
             </label>
             <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div className="text-sm font-bold text-gray-800">{currentLocationName || "Fetching location..."}</div>
               <div className="text-xs text-blue-600 mt-1">
                 {currentGpsLocation 
-                  ? "📍 GPS Active"
-                  : "GPS Inactive"
+                  ? t('gps_active')
+                  : t('gps_inactive')
                 }
               </div>
             </div>
@@ -282,7 +284,7 @@ export function SOS() {
           {/* Idle Time Display */}
           <div>
             <label className="text-xs font-bold text-gray-500 uppercase block mb-1">
-              <Clock size={12} className="inline mr-1" /> Idle Duration
+              <Clock size={12} className="inline mr-1" /> {t('idle_duration')}
             </label>
             <div className={`p-3 rounded-lg text-center font-mono text-2xl font-bold ${
               !navigationActive
@@ -297,12 +299,12 @@ export function SOS() {
             </div>
             {!navigationActive && (
               <p className="text-xs text-gray-500 mt-1 text-center">
-                Timer starts when navigation active & vehicle stopped
+                {t('timer_starts_when_navigation_active')}
               </p>
             )}
             {navigationActive && idleTimeSeconds >= IDLE_THRESHOLD && (
               <p className="text-xs text-red-600 font-bold mt-1 text-center animate-pulse">
-                ⚠️ Idle timeout exceeded
+                {t('idle_timeout_exceeded')}
               </p>
             )}
           </div>
@@ -313,14 +315,14 @@ export function SOS() {
               onClick={handleResume}
               className="w-full p-2.5 rounded-lg font-bold transition-all flex items-center justify-center gap-2 bg-green-100 text-green-800 border border-green-300 hover:bg-green-200 text-sm"
             >
-              <RotateCcw size={14} /> Resume / Reset Timer
+              <RotateCcw size={14} /> {t('resume_reset_timer')}
             </button>
           )}
 
           {/* Break Mode Toggle */}
           <div>
             <label className="text-xs font-bold text-gray-500 uppercase block mb-1">
-              <Pause size={12} className="inline mr-1" /> Break Mode
+              <Pause size={12} className="inline mr-1" /> {t('break_mode')}
             </label>
             <button
               onClick={toggleBreakMode}
@@ -335,20 +337,20 @@ export function SOS() {
             >
               {!navigationActive ? (
                 <>
-                  <Pause size={14} /> Break Disabled
+                  <Pause size={14} /> {t('break_disabled')}
                 </>
               ) : breakModeActive ? (
                 <>
-                  <Pause size={14} /> Break Active
+                  <Pause size={14} /> {t('break_active')}
                 </>
               ) : (
                 <>
-                  <Play size={14} /> Start Break
+                  <Play size={14} /> {t('start_break')}
                 </>
               )}
             </button>
             {!navigationActive && (
-              <p className="text-xs text-gray-400 mt-1 text-center">Start navigation to enable</p>
+              <p className="text-xs text-gray-400 mt-1 text-center">{t('start_navigation_to_enable')}</p>
             )}
           </div>
         </Card>
@@ -357,23 +359,23 @@ export function SOS() {
         <div className="lg:col-span-2 grid grid-cols-2 gap-4 h-fit">
           <SOSButton
             icon={Activity}
-            label="Health Issue"
-            desc="Driver incapacitated or medical emergency."
+            label={t('health_issue')}
+            desc={t('driver_incapacitated_or_medical_emergency')}
           />
           <SOSButton
             icon={ShieldAlert}
-            label="Theft/Security"
-            desc="Cargo theft or security breach."
+            label={t('theft_security')}
+            desc={t('cargo_theft_or_security_breach')}
           />
           <SOSButton
             icon={Wrench}
-            label="Breakdown"
-            desc="Engine failure, flat tire, or mechanical issue."
+            label={t('breakdown')}
+            desc={t('engine_failure_flat_tyre_mechanical_issue')}
           />
           <SOSButton
             icon={Truck}
-            label="Road Accident"
-            desc="Collision or vehicle damage."
+            label={t('road_accident')}
+            desc={t('collision_or_vehicle_damage')}
           />
         </div>
       </div>
@@ -382,7 +384,7 @@ export function SOS() {
       {sosActive && (
         <div className="fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 animate-pulse z-50">
           <Bell size={20} />
-          <span className="font-bold">SOS Signal Sent!</span>
+          <span className="font-bold">{t('sos_signal_sent')}</span>
         </div>
       )}
     </div>
