@@ -561,6 +561,18 @@ app.MapPost("/api/history", async (AppDbContext db, SaveDeliveryHistoryRequest r
         var userExists = await db.Users.AnyAsync(u => u.Email.ToLower() == req.DriverEmail.ToLower());
         if (!userExists) return Results.Unauthorized();
 
+        // --- ENFORCE SINGLE ACTIVE NAVIGATION ---
+        var activeTrips = await db.Histories
+            .Where(h => h.DriverEmail.ToLower() == req.DriverEmail.ToLower() && h.Status.ToLower() == "inprogress")
+            .ToListAsync();
+        foreach (var active in activeTrips)
+        {
+            active.Status = "Cancelled";
+            active.Notes = "New navigation started";
+        }
+        if (activeTrips.Count > 0) await db.SaveChangesAsync();
+
+        // Create new trip with InProgress status
         var trip = new DeliveryHistory {
             RouteId = req.RouteId,
             Date = req.Date,
@@ -585,7 +597,7 @@ app.MapPost("/api/history", async (AppDbContext db, SaveDeliveryHistoryRequest r
             SafetyScore = req.SafetyScore,
             Distance = req.Distance,
             Duration = req.Duration,
-            Status = req.Status,
+            Status = "InProgress",
             DriverEmail = req.DriverEmail,
             Notes = req.Notes,
             CreatedAt = DateTime.Now

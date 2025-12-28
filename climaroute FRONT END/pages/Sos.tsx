@@ -8,9 +8,11 @@ import { apiService } from '../services/apiservice';
 import { useSos } from '../contexts/SosContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useNotification } from '../contexts/NotificationContext';
 
 export function SOS() {
-    const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const { triggerIdleAlert } = useNotification ? useNotification() : { triggerIdleAlert: undefined };
   const { 
     sosStatus, 
     idleTimeSeconds, 
@@ -28,9 +30,47 @@ export function SOS() {
   const [currentLocationName, setCurrentLocationName] = useState<string>("GPS Inactive");
   const [loading, setLoading] = useState(false);
   const [sosActive, setSosActive] = useState(false);
+
   const [userVehicleId, setUserVehicleId] = useState<string>('');
 
-  const IDLE_THRESHOLD = 15 * 60; // 15 minutes in seconds
+  const IDLE_THRESHOLD = 60; // 5 minutes
+  const IDLE_ALERT_SESSION_KEY = 'idle_alert_sent';
+
+  // --- IDLE TIME NOTIFICATION LOGIC ---
+  // IDLE TIME NOTIFICATION LOGIC (strictly based on idleTimeSeconds, not breakSeconds)
+  useEffect(() => {
+    // Only trigger if navigation is active, NOT in break mode, and idle time exceeds threshold
+    if (
+      navigationActive &&
+      !breakModeActive &&
+      idleTimeSeconds >= IDLE_THRESHOLD &&
+      !sessionStorage.getItem(IDLE_ALERT_SESSION_KEY)
+    ) {
+      const idleMessages = {
+        en: "Your idle time has exceeded the allowed limit. A notification has been sent to admin.",
+        ta: "உங்கள் ஓய்வு நேரம் அனுமதிக்கப்பட்ட வரம்பை மீறியுள்ளது. நிர்வாகிக்கு அறிவிப்பு அனுப்பப்பட்டுள்ளது."
+      };
+      const adminMessage = "Driver stopped or idle time exceeded for more than 5 minutes.";
+      const now = new Date().toISOString();
+      if (triggerIdleAlert) {
+        triggerIdleAlert({
+          id: 'idle_' + now,
+          type: 'IDLE_EXCEEDED',
+          message: idleMessages[lang] || idleMessages.en,
+          timestamp: now,
+          role: 'user',
+          voice: true
+        });
+      }
+      // Send alert to backend for admin
+      apiService.createSystemAlert('IDLE_ALERT', adminMessage, user?.email || undefined);
+      sessionStorage.setItem(IDLE_ALERT_SESSION_KEY, '1');
+    }
+    // Reset session key if timer resets or break mode is entered
+    if (idleTimeSeconds < IDLE_THRESHOLD || breakModeActive) {
+      sessionStorage.removeItem(IDLE_ALERT_SESSION_KEY);
+    }
+  }, [idleTimeSeconds, navigationActive, lang, triggerIdleAlert, breakModeActive]);
 
   // Helper: Get location name from coordinates (NEVER returns raw coordinates)
   const getLocationName = async (lat: number, lon: number): Promise<string> => {
@@ -241,26 +281,29 @@ export function SOS() {
           
           {/* Navigation Status Banner - Shows when navigation is INACTIVE */}
           {!navigationActive && (
-            <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg flex items-center gap-2">
-              <Navigation size={16} className="text-orange-600" />
-              <span className="text-sm font-bold text-orange-700">Start navigation to enable SOS monitoring</span>
+            <div className="p-2 bg-orange-50 border border-orange-200 rounded-md flex items-center gap-2 mb-2">
+              <Navigation size={14} className="text-orange-600" />
+              <div>
+                <span className="text-xs font-bold text-orange-700">Start navigation to enable SOS monitoring</span>
+                <div className="text-[11px] text-gray-500 mt-0.5">Timer starts when navigation active & vehicle stopped</div>
+              </div>
             </div>
           )}
           
-          {/* Navigation & Vehicle Status - Combined Row */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Navigation & Vehicle Status - Compact Row */}
+          <div className="grid grid-cols-2 gap-2 mb-2">
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase block mb-1">{t('navigation')}</label>
-              <div className={`p-2 rounded-lg flex items-center gap-2 ${navigationActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                <span className={`w-2.5 h-2.5 rounded-full ${navigationActive ? 'bg-green-600 animate-pulse' : 'bg-gray-600'}`}></span>
-                <span className="font-bold text-xs">{navigationActive ? t('active') : t('inactive')}</span>
+              <label className="text-[10px] font-bold text-gray-500 uppercase block mb-0.5">{t('navigation')}</label>
+              <div className={`p-1 rounded flex items-center gap-1 ${navigationActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                <span className={`w-2 h-2 rounded-full ${navigationActive ? 'bg-green-600 animate-pulse' : 'bg-gray-600'}`}></span>
+                <span className="font-bold text-[11px]">{navigationActive ? t('active') : t('inactive')}</span>
               </div>
             </div>
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase block mb-1">{t('vehicle')}</label>
-              <div className={`p-2 rounded-lg flex items-center gap-2 ${getVehicleStatusColor()}`}>
-                <span className={`w-2.5 h-2.5 rounded-full ${getVehicleDotColor()}`}></span>
-                <span className="font-bold text-xs">{t(getVehicleStatusDisplay().toLowerCase().replace(/\s/g, '_'))}</span>
+              <label className="text-[10px] font-bold text-gray-500 uppercase block mb-0.5">{t('vehicle')}</label>
+              <div className={`p-1 rounded flex items-center gap-1 ${getVehicleStatusColor()}`}> 
+                <span className={`w-2 h-2 rounded-full ${getVehicleDotColor()}`}></span>
+                <span className="font-bold text-[11px]">{t(getVehicleStatusDisplay().toLowerCase().replace(/\s/g, '_'))}</span>
               </div>
             </div>
           </div>
@@ -349,6 +392,7 @@ export function SOS() {
                 </>
               )}
             </button>
+            {/* No break time countdown */}
             {!navigationActive && (
               <p className="text-xs text-gray-400 mt-1 text-center">{t('start_navigation_to_enable')}</p>
             )}

@@ -6,6 +6,7 @@ import { CloudRain, AlertTriangle, Clock, Activity, Navigation, Crosshair } from
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { apiService, getCurrentUser } from '../services/apiservice'; // Ensure filename matches case
 import { useSettings, convertTemp } from '../contexts/SettingsContext';
+import { useNotification } from '../contexts/NotificationContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useSos } from '../contexts/SosContext';
 import 'leaflet/dist/leaflet.css';
@@ -38,7 +39,8 @@ export default function Dashboard() {
   const { settings } = useSettings();
   const { user } = useAuth();
   const { sosStatus, resolveActiveAlert } = useSos();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const { addNotification } = useNotification();
   
   // --- STATE MANAGEMENT ---
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -92,7 +94,7 @@ export default function Dashboard() {
 
   // --- 2. LOAD DATA (Database + Session) ---
   useEffect(() => {
-    findLocation(); 
+    findLocation();
 
     // A. READ FROM SESSION STORAGE (Data passed from other pages)
     const savedSpeed = sessionStorage.getItem('climaRoute_liveSpeed');
@@ -107,22 +109,47 @@ export default function Dashboard() {
       try {
         // Get current user for filtered data
         const { email, role } = getCurrentUser();
-        
+
         const [notifsData, weatherData] = await Promise.all([
-            apiService.getUserAlerts(email, role), // User-specific notifications
-            apiService.getWeatherForecast()
+          apiService.getUserAlerts(email, role), // User-specific notifications
+          apiService.getWeatherForecast()
         ]);
 
         // 1. Set Notifications (Take top 3) - already filtered by backend
         setNotifications(Array.isArray(notifsData) ? notifsData.slice(0, 3) : []);
-        
+
         // 2. Set Weather
         setWeather(weatherData);
         if (weatherData && weatherData.current) {
-            // Convert temp according to user settings
-            const valC = Number(weatherData.current.temperature || 0);
-            const display = convertTemp(valC, settings.temperatureUnit);
-            setCurrentTemp(display);
+          // Convert temp according to user settings
+          const valC = Number(weatherData.current.temperature || 0);
+          const display = convertTemp(valC, settings.temperatureUnit);
+          setCurrentTemp(display);
+
+          // --- WEATHER ALERT LOGIC ---
+          const weatherDesc = (weatherData.current.description || '').toLowerCase();
+          if (weatherDesc.includes('heavy rain') || weatherDesc.includes('storm')) {
+            addNotification({
+              type: 'WEATHER_ALERT',
+              title: lang === 'ta' ? 'வானிலை எச்சரிக்கை' : 'Weather Alert',
+              message: lang === 'ta'
+                ? 'கனமழை அல்லது புயல் எதிர்பார்க்கப்படுகிறது. பாதுகாப்பாக இருங்கள்.'
+                : 'Heavy rain or storm expected. Stay safe.',
+            });
+          }
+        }
+
+        // --- BREAK TIME ALERT LOGIC ---
+        // Example: break time exceeded flag in sessionStorage (set elsewhere in app)
+        const breakExceeded = sessionStorage.getItem('climaRoute_break_exceeded');
+        if (breakExceeded === '1') {
+          addNotification({
+            type: 'BREAK_ALERT',
+            title: lang === 'ta' ? 'இடைவேளை எச்சரிக்கை' : 'Break Time Alert',
+            message: lang === 'ta'
+              ? 'உங்கள் ஓய்வு நேரம் மீறப்பட்டுள்ளது. தயவுசெய்து ஓய்வெடுக்கவும்.'
+              : 'Your break time has been exceeded. Please take a rest.',
+          });
         }
 
         // Show live values only if navigation flag present
@@ -144,7 +171,7 @@ export default function Dashboard() {
       }
     };
     loadData();
-  }, []);
+  }, [addNotification, lang, settings.temperatureUnit]);
 
   // Update temperature display when settings change
   useEffect(() => {

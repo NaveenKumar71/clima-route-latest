@@ -42,14 +42,14 @@ export default function ManageUsers() {
     loadUsers();
   }, []);
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this user? They will not be able to login.")) {
+  const handleDelete = async (id: number, email: string) => {
+    if (window.confirm("Are you sure you want to delete this user? This will remove ALL their data, history, and credentials permanently.")) {
       try {
-        await apiService.deleteUser(id);
+        await apiService.deleteUser(id, email);
         // Refresh list after delete
         loadUsers(); 
       } catch (err) {
-        alert("Failed to delete user");
+        alert("Failed to delete user and all data");
       }
     }
   };
@@ -200,9 +200,9 @@ export default function ManageUsers() {
                             <Edit size={18} />
                           </button>
                           <button 
-                            onClick={() => handleDelete(user.id)} 
+                            onClick={() => handleDelete(user.id, user.email)} 
                             className="text-gray-400 hover:text-red-600"
-                            title="Delete user"
+                            title="Delete user and all data"
                           >
                             <Trash2 size={18} />
                           </button>

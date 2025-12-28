@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, Button, Input } from '../components/Layout';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import { Navigation, StopCircle, Crosshair, MapPin, MousePointerClick, AlertTriangle, RefreshCw, Pause, Play, RotateCcw } from 'lucide-react';
-import { apiService } from '../services/apiservice';
+import { apiService, getCurrentUser } from '../services/apiservice';
 import { useSettings } from '../contexts/SettingsContext';
 import { useSos } from '../contexts/SosContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -164,7 +164,7 @@ export function ReRouting() {
   });
 
   // Timer: 10s for Testing (Change to 3600 for real life)
-  const TIMER_START = 10; 
+  const TIMER_START = 30; // 30 seconds for reroute
   const [timeLeft, setTimeLeft] = useState<number>(() => {
     const saved = localStorage.getItem('climaRoute_timeLeft');
     return saved ? parseInt(saved) : TIMER_START;
@@ -224,13 +224,21 @@ export function ReRouting() {
 
             try {
               const tid = activeTripId || (parseInt(localStorage.getItem('climaRoute_tripId') || '0') || null);
-              if (tid) await apiService.updateHistory(tid, { 
-                currentLat: pos.coords.latitude, 
-                currentLon: pos.coords.longitude, 
-                speed: Math.round(kmh), 
-                eta: localStorage.getItem('climaRoute_eta') || undefined, 
-                status: 'InProgress' 
-              });
+              if (tid) {
+                const { email, role } = getCurrentUser();
+                await apiService.updateHistory(
+                  tid,
+                  {
+                    currentLat: pos.coords.latitude,
+                    currentLon: pos.coords.longitude,
+                    speed: Math.round(kmh),
+                    eta: localStorage.getItem('climaRoute_eta') || undefined,
+                    status: 'InProgress',
+                  },
+                  email,
+                  role
+                );
+              }
             } catch (err) { console.warn('telemetry update failed', err); }
           }
 
@@ -246,7 +254,10 @@ export function ReRouting() {
 
               try {
                 const tid = activeTripId || (parseInt(localStorage.getItem('climaRoute_tripId') || '0') || null);
-                if (tid) await apiService.updateHistory(tid, { eta: timeString });
+                if (tid) {
+                  const { email, role } = getCurrentUser();
+                  await apiService.updateHistory(tid, { eta: timeString }, email, role);
+                }
               } catch (e) { }
             }
           } catch {}
@@ -703,7 +714,21 @@ export function ReRouting() {
             // push telemetry to backend if we have an active trip
             try {
               const tid = activeTripId || (parseInt(localStorage.getItem('climaRoute_tripId') || '0') || null);
-              if (tid) await apiService.updateHistory(tid, { currentLat: pos.coords.latitude, currentLon: pos.coords.longitude, speed: Math.round(kmh), eta: localStorage.getItem('climaRoute_eta') || undefined, status: 'InProgress' });
+              if (tid) {
+                const { email, role } = getCurrentUser();
+                await apiService.updateHistory(
+                  tid,
+                  {
+                    currentLat: pos.coords.latitude,
+                    currentLon: pos.coords.longitude,
+                    speed: Math.round(kmh),
+                    eta: localStorage.getItem('climaRoute_eta') || undefined,
+                    status: 'InProgress',
+                  },
+                  email,
+                  role
+                );
+              }
             } catch (err) { console.warn('telemetry update failed', err); }
           }
 
@@ -721,7 +746,10 @@ export function ReRouting() {
               // also update backend ETA
               try {
                 const tid = activeTripId || (parseInt(localStorage.getItem('climaRoute_tripId') || '0') || null);
-                if (tid) await apiService.updateHistory(tid, { eta: timeString });
+                if (tid) {
+                  const { email, role } = getCurrentUser();
+                  await apiService.updateHistory(tid, { eta: timeString }, email, role);
+                }
               } catch (e) { }
             }
           } catch {}
@@ -765,9 +793,15 @@ export function ReRouting() {
     try {
       const tid = activeTripId || (parseInt(localStorage.getItem('climaRoute_tripId') || '0') || null);
       if (tid) {
-        await apiService.updateHistory(tid, { 
-          status: newMode ? 'Paused' : 'InProgress' 
-        });
+        {
+          const { email, role } = getCurrentUser();
+          await apiService.updateHistory(
+            tid,
+            { status: newMode ? 'Paused' : 'InProgress' },
+            email,
+            role
+          );
+        }
       }
     } catch (err) {
       console.error("Failed to update pause status", err);
@@ -780,7 +814,10 @@ export function ReRouting() {
     try {
       const tid = activeTripId || (parseInt(localStorage.getItem('climaRoute_tripId') || '0') || null);
       if (tid) {
-        await apiService.updateHistory(tid, { status: 'Cancelled' });
+        {
+          const { email, role } = getCurrentUser();
+          await apiService.updateHistory(tid, { status: 'Cancelled' }, email, role);
+        }
       }
     } catch (err) {
       console.error("Failed to cancel trip", err);
@@ -838,12 +875,18 @@ export function ReRouting() {
         if (tid) {
           try {
             console.log('[CompleteAndSave] Trying fallback updateHistory for tripId:', tid);
-            const fallbackResult = await apiService.updateHistory(tid, { 
-              status: 'Completed', 
-              tripStatus: 'Completed',
-              endTime: endTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-              speed: 0
-            });
+            const { email, role } = getCurrentUser();
+            const fallbackResult = await apiService.updateHistory(
+              tid,
+              {
+                status: 'Completed',
+                tripStatus: 'Completed',
+                endTime: endTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+                speed: 0,
+              },
+              email,
+              role
+            );
             
             // updateHistory returns { success: true, ... } on success
             if (fallbackResult && (fallbackResult.success || fallbackResult.status === 'Completed')) {

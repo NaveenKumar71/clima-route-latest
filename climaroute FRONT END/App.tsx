@@ -31,14 +31,17 @@ import EmergencyAlerts from './pages/admin/EmergencyAlerts';
 // Simple wrapper to render outlet content within the main Layout
 const OutletWrapper = () => <Outlet />;
 
+import { NotificationProvider } from './contexts/NotificationContext';
+
 export default function App() {
   return (
     <AuthProvider>
       <SettingsProvider>
         <BackgroundProvider>
           <SosProvider>
-            <HashRouter>
-              <Routes>
+            <NotificationProvider>
+              <HashRouter>
+                <Routes>
           {/* Public / Auth Routes */}
           <Route path="/" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -69,7 +72,8 @@ export default function App() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          </HashRouter>
+              </HashRouter>
+            </NotificationProvider>
           </SosProvider>
         </BackgroundProvider>
       </SettingsProvider>

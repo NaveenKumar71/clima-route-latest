@@ -1,48 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card } from '../components/Layout';
 import { 
     CloudRain, CloudLightning, AlertTriangle, Bell, Inbox, ShieldAlert, Timer
 } from 'lucide-react';
-import { apiService, getCurrentUser } from '../services/apiservice';
+import { useNotification } from '../contexts/NotificationContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useSos } from '../contexts/SosContext';
+// import { playVoiceAlert } from '../utils/voiceAlert';
 
 // --- Weather & System Alerts Notification Page ---
 export function Notifications() {
-    const { t } = useLanguage();
-  const [alerts, setAlerts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
+  const { notifications } = useNotification();
   const { sosStatus } = useSos();
-
-  useEffect(() => {
-    const loadAlerts = async () => {
-      try {
-        // SECURE: Pass user credentials for backend filtering
-        const { email, role } = getCurrentUser();
-        const userAlerts = await apiService.getUserAlerts(email, role);
-        setAlerts(Array.isArray(userAlerts) ? userAlerts : []);
-      } catch (err) {
-        console.error("Failed to load alerts", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadAlerts();
-  }, []);
-
-  // Polling: refresh alerts every 60 seconds - with secure user filtering
-  useEffect(() => {
-    const id = setInterval(async () => {
-      try {
-        const { email, role } = getCurrentUser();
-        const userAlerts = await apiService.getUserAlerts(email, role);
-        if (Array.isArray(userAlerts)) setAlerts(userAlerts);
-      } catch (e) {
-        // ignore polling errors
-      }
-    }, 60000);
-    return () => clearInterval(id);
-  }, []);
 
   // Helper: format timestamp to relative time
   function formatTimestamp(ts: string | undefined) {
@@ -129,6 +99,31 @@ export function Notifications() {
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getBadgeStyle()}`}>
                 {alert.severity?.replace('_', ' ')}
               </span>
+              {/* Play button for SYSTEM_ALERT with single bilingual audio */}
+              {alert.voice && (
+                <button
+                  className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                  onClick={() => {
+                    let audioFile = '';
+                    if (alert.idle_time || alert.type === 'SYSTEM_ALERT' && alert.severity === 'IDLE_ALERT') {
+                      audioFile = '/audio/Idle_time.ogg';
+                    } else if (alert.rain_notification || alert.type === 'WEATHER_ALERT' && alert.severity === 'RAIN') {
+                      audioFile = '/audio/Rain_notification.ogg';
+                    } else if (alert.audio) {
+                      audioFile = `/audio/${alert.audio}`;
+                    }
+                    if (audioFile) {
+                      const audio = new Audio(audioFile);
+                      audio.play();
+                    } else {
+                      alert('No audio file found for this notification.');
+                    }
+                  }}
+                  title="Play Voice Alert (Bilingual)"
+                >
+                  <span role="img" aria-label="Play">🔊</span>
+                </button>
+              )}
             </div>
             <span className="text-xs text-gray-500 font-medium">{formatTimestamp(alert.timestamp)}</span>
           </div>
@@ -164,8 +159,8 @@ export function Notifications() {
   );
 
   // Separate alerts by type
-  const weatherAlerts = alerts.filter(a => a.type === 'WEATHER_ALERT');
-  const systemAlerts = alerts.filter(a => a.type === 'SYSTEM_ALERT');
+  const weatherAlerts = notifications.filter(a => a.type === 'WEATHER_ALERT');
+  const systemAlerts = notifications.filter(a => a.type === 'SYSTEM_ALERT');
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -187,9 +182,7 @@ export function Notifications() {
         </div>
       </div>
       
-      {loading ? (
-        <div className="p-8 text-center text-gray-500 animate-pulse">Checking for alerts...</div>
-      ) : alerts.length === 0 ? (
+      {notifications.length === 0 ? (
         <Card>
           <EmptyState />
         </Card>

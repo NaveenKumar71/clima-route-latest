@@ -75,11 +75,13 @@ export const apiService = {
     }
   },
 
-  // DELETE USER (Admin)
-  deleteUser: async (id: number) => {
+  // DELETE USER (Admin) - FULL CLEANUP
+  deleteUser: async (id: number, email?: string) => {
     try {
-      const response = await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete');
+      // Always call cleanup endpoint to remove all user data
+      if (!email) throw new Error('User email required for full cleanup');
+      const response = await fetch(`${API_URL}/users/cleanup/${encodeURIComponent(email)}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Failed to delete user and all data');
       return await response.json();
     } catch (err) {
       console.error('DeleteUser Error:', err);
